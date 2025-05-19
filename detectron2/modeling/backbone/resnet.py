@@ -116,8 +116,7 @@ class BottleneckBlock(CNNBlockBase):
         num_groups=1,
         norm="BN",
         stride_in_1x1=False,
-        dilation=1,
-        self.cbam = CBAM(out_channels)
+        dilation=1
     ):
         """
         Args:
@@ -131,6 +130,7 @@ class BottleneckBlock(CNNBlockBase):
             dilation (int): the dilation rate of the 3x3 conv layer.
         """
         super().__init__(in_channels, out_channels, stride)
+        self.cbam = CBAM(out_channels)
 
         if in_channels != out_channels:
             self.shortcut = Conv2d(
