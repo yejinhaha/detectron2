@@ -4,6 +4,8 @@ import fvcore.nn.weight_init as weight_init
 import torch
 import torch.nn.functional as F
 from torch import nn
+from detectron2.modeling.backbone.cbam import CBAM
+
 
 from detectron2.layers import (
     CNNBlockBase,
@@ -115,6 +117,7 @@ class BottleneckBlock(CNNBlockBase):
         norm="BN",
         stride_in_1x1=False,
         dilation=1,
+        self.cbam = CBAM(out_channels)
     ):
         """
         Args:
@@ -207,6 +210,7 @@ class BottleneckBlock(CNNBlockBase):
 
         out += shortcut
         out = F.relu_(out)
+        out = self.cbam(out) 
         return out
 
 
@@ -692,3 +696,20 @@ def build_resnet_backbone(cfg, input_shape):
         bottleneck_channels *= 2
         stages.append(blocks)
     return ResNet(stem, stages, out_features=out_features, freeze_at=freeze_at)
+
+    @BACKBONE_REGISTRY.register()
+    def build_resnet_fpn_backbone_with_cbam(cfg, input_shape: ShapeSpec):
+        """
+        Build a ResNet-FPN backbone with CBAM inserted.
+        """
+        backbone = build_resnet_backbone(cfg, input_shape)
+        # You can also replace FPN here or just use default
+        return FPN(
+            bottom_up=backbone,
+            in_features=cfg.MODEL.FPN.IN_FEATURES,
+            out_channels=cfg.MODEL.FPN.OUT_CHANNELS,
+            norm=cfg.MODEL.FPN.NORM,
+            top_block=LastLevelMaxPool(),
+            fuse_type=cfg.MODEL.FPN.FUSE_TYPE,
+        )
+
