@@ -5,6 +5,7 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 from detectron2.modeling.backbone.cbam import CBAM
+from detectron2.modeling.neck import FPN, LastLevelMaxP
 
 
 from detectron2.layers import (
@@ -28,6 +29,7 @@ __all__ = [
     "ResNet",
     "make_stage",
     "build_resnet_backbone",
+    "build_resnet_fpn_backbone_with_cbam",
 ]
 
 
